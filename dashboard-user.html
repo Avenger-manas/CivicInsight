@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CivicInsight — Citizen Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --s:#E8500A;--sl:#FF7A35;
+  --deep:#070709;--ink:#0E0E14;--lift:#181820;
+  --bdr:rgba(232,80,10,.14);--bdr2:rgba(255,255,255,.07);
+  --txt:#EDEAE5;--txt2:#B0ACBA;--txt3:#6E6A7A;
+  --green:#0FC88A;--red:#F04040;--amber:#F0A030;
+}
+html,body{height:100%}
+body{background:var(--deep);color:var(--txt);font-family:'Outfit',sans-serif;
+  display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sb{width:250px;min-height:100vh;background:var(--ink);border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;padding:26px 16px;position:fixed;top:0;left:0;z-index:10}
+.sb-logo{font-size:1.15rem;font-weight:800;margin-bottom:26px;display:flex;align-items:center;gap:7px}
+.sb-logo span{color:var(--sl)}
+.ldot{width:6px;height:6px;background:var(--s);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,80,10,.5)}50%{box-shadow:0 0 0 6px rgba(232,80,10,0)}}
+.sb-user{background:rgba(232,80,10,.07);border:1px solid var(--bdr);border-radius:11px;padding:13px;margin-bottom:22px}
+.sb-role{font-size:.62rem;color:var(--s);text-transform:uppercase;letter-spacing:3px;
+  margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.sb-name{font-weight:700;font-size:.92rem}
+.sb-nav{list-style:none;flex:1}
+.sb-nav li{margin-bottom:2px}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:8px;
+  color:var(--txt3);text-decoration:none;font-size:.855rem;font-weight:500;
+  transition:all .2s;cursor:pointer}
+.sb-nav a:hover,.sb-nav a.on{background:rgba(232,80,10,.1);color:var(--txt)}
+.sb-nav a.on{border-left:2px solid var(--s);padding-left:10px}
+.sb-div{height:1px;background:var(--bdr2);margin:12px 0}
+.sb-out{margin-top:auto;padding:10px 12px;border-radius:8px;border:none;
+  background:rgba(240,64,64,.08);color:var(--red);font-family:'Outfit',sans-serif;
+  font-size:.855rem;cursor:pointer;width:100%;text-align:left;transition:background .2s;
+  display:flex;align-items:center;gap:8px}
+.sb-out:hover{background:rgba(240,64,64,.16)}
+
+/* MAIN */
+.main{margin-left:250px;flex:1;padding:36px;position:relative;z-index:1;min-height:100vh}
+
+/* TOPBAR */
+.top{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:30px;flex-wrap:wrap;gap:12px}
+.top h1{font-size:1.45rem;font-weight:800;letter-spacing:-.5px}
+.top h1 em{color:var(--sl);font-style:normal}
+.top p{color:var(--txt3);font-size:.84rem;margin-top:3px}
+.rbdg{background:rgba(232,80,10,.1);border:1px solid var(--bdr);border-radius:100px;
+  padding:5px 14px;font-size:.72rem;color:var(--sl);font-family:'JetBrains Mono',monospace}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+
+/* CARD */
+.card{background:var(--ink);border:1px solid var(--bdr);border-radius:16px;overflow:hidden}
+.ch{padding:22px 24px;border-bottom:1px solid var(--bdr2)}
+.ce{font-size:.6rem;text-transform:uppercase;letter-spacing:3px;color:var(--s);
+  font-weight:600;margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.ct{font-size:1rem;font-weight:700;letter-spacing:-.3px;margin-bottom:5px}
+.cd{color:var(--txt3);font-size:.82rem;line-height:1.7}
+.cb{padding:20px 24px 24px}
+
+/* FIELDS */
+.field{margin-bottom:12px}
+label{display:block;font-size:.69rem;color:var(--txt3);margin-bottom:5px;
+  font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+input,textarea{width:100%;background:rgba(0,0,0,.38);border:1px solid var(--bdr2);
+  border-radius:9px;padding:11px 13px;color:var(--txt);font-family:'Outfit',sans-serif;
+  font-size:.875rem;outline:none;transition:border-color .2s,box-shadow .2s}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus{border-color:rgba(232,80,10,.5);box-shadow:0 0 0 3px rgba(232,80,10,.08)}
+input::placeholder,textarea::placeholder{color:var(--txt3);font-style:italic;font-size:.82rem}
+
+/* BUTTONS */
+.btn-p{width:100%;padding:12px;background:var(--s);border:none;border-radius:9px;
+  color:#fff;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(232,80,10,.25)}
+.btn-p:hover{background:var(--sl);transform:translateY(-1px)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.srow{display:flex;gap:9px}
+.srow input{flex:1}
+.btn-s{padding:11px 16px;background:var(--s);border:none;border-radius:9px;
+  color:#fff;font-family:'Outfit',sans-serif;font-size:.84rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:background .2s}
+.btn-s:hover{background:var(--sl)}
+.btn-s:disabled{opacity:.5;cursor:not-allowed}
+
+/* AI PANEL */
+.ai{margin-top:13px;background:rgba(0,0,0,.5);border:1px solid rgba(232,80,10,.18);
+  border-radius:11px;padding:16px;display:none}
+.ai.on{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ai-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:3px;color:var(--s);
+  font-weight:700;margin-bottom:12px;font-family:'JetBrains Mono',monospace}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:11px}
+.chip{background:rgba(232,80,10,.07);border:1px solid rgba(232,80,10,.15);
+  border-radius:7px;padding:8px 12px}
+.chip .cl{color:var(--txt3);font-size:.62rem;display:block;margin-bottom:2px;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.chip .cv{font-weight:600;font-size:.82rem}
+.chip.crit .cv{color:var(--red)}
+.chip.hi   .cv{color:var(--amber)}
+.chip.ok   .cv{color:var(--green)}
+.ai-note{color:var(--txt2);font-size:.84rem;line-height:1.7}
+.idbox{margin-top:11px;background:rgba(15,200,138,.06);border:1px solid rgba(15,200,138,.18);
+  border-radius:8px;padding:11px 14px;font-size:.84rem;color:var(--green);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.idbox strong{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--txt)}
+
+/* STATUS RESULT */
+.stres{margin-top:13px;background:rgba(0,0,0,.4);border:1px solid var(--bdr2);
+  border-radius:11px;padding:16px;display:none}
+.stres.on{display:block;animation:fadeIn .3s ease}
+.str{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.84rem}
+.str:last-child{border-bottom:none}
+.sk{color:var(--txt3)}.sv{font-weight:600;text-align:right;max-width:60%}
+.bdg{padding:3px 10px;border-radius:6px;font-size:.71rem;font-weight:600;font-family:'JetBrains Mono',monospace}
+.bdg-p{background:rgba(255,255,255,.05);color:var(--txt3)}
+.bdg-i{background:rgba(240,160,48,.12);color:var(--amber)}
+.bdg-r{background:rgba(15,200,138,.12);color:var(--green)}
+
+/* MSGS */
+.err{background:rgba(240,64,64,.08);border:1px solid rgba(240,64,64,.2);
+  border-radius:8px;padding:9px 13px;color:var(--red);font-size:.84rem;
+  margin-bottom:11px;display:none}
+.err.on{display:block}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(232,80,10,.2);
+  border-top-color:var(--s);border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:1050px){.two{grid-template-columns:1fr}}
+@media(max-width:720px){.sb{display:none}.main{margin-left:0;padding:20px 14px}.frow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<aside class="sb">
+  <div class="sb-logo"><span class="ldot"></span>Civic<span>Insight</span></div>
+  <div class="sb-user">
+    <div class="sb-role">CITIZEN_PORTAL</div>
+    <div class="sb-name" id="sbName">—</div>
+  </div>
+  <ul class="sb-nav">
+    <li><a class="on">📝&nbsp; Shikayat Darj Karein</a></li>
+    <li><a onclick="document.getElementById('stCard').scrollIntoView({behavior:'smooth'})">🔍&nbsp; Status Check</a></li>
+  </ul>
+  <div class="sb-div"></div>
+  <button class="sb-out" onclick="logout()">🚪&nbsp; Logout</button>
+</aside>
+
+<main class="main">
+  <div class="top">
+    <div>
+      <h1>Namaskar, <em id="wName">User</em> 👋</h1>
+      <p>Apni shikayat darj karein ya purani complaint ka status track karein.</p>
+    </div>
+    <div class="rbdg">ROLE: CITIZEN</div>
+  </div>
+
+  <div class="two">
+
+    <div class="card">
+      <div class="ch">
+        <div class="ce">// Voice Your Concern | Apni Baat Rakhein</div>
+        <div class="ct">Nayi Shikayat Darj Karein</div>
+        <p class="cd">Detail mein batayein kya samasya hai — AI routing aur priority khud sambhaalega.</p>
+      </div>
+      <div class="cb">
+        <div class="err" id="cErr"></div>
+        <div class="frow field">
+          <div><label>Aapka Naam *</label><input type="text" id="cName" placeholder="Pura naam..."/></div>
+          <div><label>Sheher *</label><input type="text" id="cCity" placeholder="Budaun..."/></div>
+        </div>
+        <div class="field"><label>Ward Number *</label><input type="text" id="cWard" placeholder="Ward 12"/></div>
+        <div class="field"><label>Shikayat ka Vivaran *</label>
+          <textarea id="cText" placeholder="Jaise: Mere mohalle mein pichle 2 hafte se paani nahi aa raha hai..."></textarea>
+        </div>
+        <button class="btn-p" id="subBtn" onclick="submitComplaint()">🚀 Shikayat AI Ko Bhejein</button>
+        <div class="ai" id="aiPanel">
+          <div class="ai-lbl">⚡ AI_INSIGHT_PANEL // LIVE_ANALYSIS</div>
+          <div id="aiCont"><span class="spin"></span> AI analyze kar raha hai...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="stCard">
+      <div class="ch">
+        <div class="ce">// Track Your Complaint</div>
+        <div class="ct">Shikayat Status Check Karein</div>
+        <p class="cd">Complaint ID darj karein — real-time backend se status milega.</p>
+      </div>
+      <div class="cb">
+        <div class="field"><label>Complaint ID</label>
+          <div class="srow">
+            <input type="text" id="stId" placeholder="ID paste karein..."/>
+            <button class="btn-s" id="stBtn" onclick="checkStatus()">Check Karein</button>
+          </div>
+        </div>
+        <div class="stres" id="stRes"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+/* ── GLOBAL CONFIG ── */
+const API   = 'https://civicinsight.onrender.com';
+const token = localStorage.getItem('token');
+const role  = localStorage.getItem('role');
+const uname = localStorage.getItem('username') || 'User';
+
+/* ── AUTH GUARD ── */
+if (!token || role !== 'USER') {
+  alert('Pehle login karein.');
+  window.location.href = 'login.html';
+}
+
+document.getElementById('sbName').textContent = uname;
+document.getElementById('wName').textContent  = uname;
+
+/* ── HEADERS ── */
+const H = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer ' + token
+});
+
+/* ── LOGOUT ── */
+function logout() {
+    localStorage.clear();
+    window.location.href = 'login.html';
+}
+
+/* ── SUBMIT COMPLAINT ── */
+/* ── SUBMIT COMPLAINT FIXED ── */
+/* ── SUBMIT COMPLAINT (String Response Compatible) ── */
+async function submitComplaint() {
+    const name = document.getElementById('cName').value.trim();
+    const city = document.getElementById('cCity').value.trim();
+    const ward = document.getElementById('cWard').value.trim();
+    const text = document.getElementById('cText').value.trim();
+    const errEl = document.getElementById('cErr');
+    
+    errEl.classList.remove('on');
+
+    if (!name || !city || !ward || !text) {
+        errEl.textContent = '❌ Sabhi fields (Naam, City, Ward, Vivaran) bharna zaroori hai.';
+        errEl.classList.add('on');
+        return;
+    }
+
+    const btn   = document.getElementById('subBtn');
+    const panel = document.getElementById('aiPanel');
+    const cont  = document.getElementById('aiCont');
+
+    // Loading State
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Processing...';
+    panel.classList.add('on');
+    cont.innerHTML = '<span class="spin"></span> AI analysis aur Officer mapping chal rahi hai...';
+
+    try {
+        const res = await fetch(`${API}/user/complaint/submit`, {
+            method: 'POST',
+            headers: H(),
+            body: JSON.stringify({ 
+                name: name,         
+                city: city, 
+                ward_number: ward, 
+                complaint: text 
+            })
+        });
+
+        // Backend se aane wali String ko read karna
+        const serverMessage = await res.text();
+
+        if (!res.ok) {
+            throw new Error(serverMessage || `Server Error: ${res.status}`);
+        }
+
+        // Success UI
+        cont.innerHTML = `
+            <div class="chips">
+                <div class="chip ok"><span class="cl">STATUS</span><span class="cv">SUCCESS</span></div>
+                <div class="chip"><span class="cl">ACTION</span><span class="cv">ASSIGNED</span></div>
+            </div>
+            <p class="ai-note" style="margin-top:12px; color:var(--green); font-weight:500;">
+                ✅ ${serverMessage}
+            </p>
+            <div style="margin-top:10px; font-size:0.75rem; color:var(--txt3); border-top:1px solid var(--bdr2); padding-top:8px;">
+                Aapki shikayat database mein save ho gayi hai.
+            </div>
+        `;
+
+        // Form Clear karein
+        document.getElementById('cText').value = '';
+
+    } catch (e) {
+        console.error("Submit Error:", e);
+        cont.innerHTML = `<p style="color:var(--red); font-size:.85rem">❌ Error: ${e.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Shikayat AI Ko Bhejein';
+    }
+}
+
+/* ── CHECK STATUS ── */
+async function checkStatus() {
+    const idInput = document.getElementById('stId');
+    const resEl = document.getElementById('stRes');
+    const btn = document.getElementById('stBtn');
+
+    const id = idInput.value.trim();
+    if (!id) { 
+        alert('Kripya Complaint ID darj karein.'); 
+        return; 
+    }
+
+    resEl.classList.add('on');
+    resEl.style.display = 'block';
+    resEl.innerHTML = '<span class="spin"></span> Backend se data fetch ho raha hai...';
+    btn.disabled = true;
+
+    try {
+        const r = await fetch(
+            `${API}/user/complaint/check/status?Id=${encodeURIComponent(id)}`,
+            { 
+                method: 'GET', 
+                headers: H() 
+            }
+        );
+
+        if (!r.ok) {
+            const t = await r.text();
+            if(r.status === 401) throw new Error("Session expired. Dobara login karein.");
+            if(r.status === 404) throw new Error("Ye ID record mein nahi mili.");
+            throw new Error(`Server error (${r.status})`);
+        }
+
+        const d = await r.json();
+        const st = (d.status || 'PENDING').toUpperCase();
+        const badge =
+            st === 'RESOLVED'    ? `<span class="bdg bdg-r">RESOLVED ✅</span>` :
+            st === 'IN_PROGRESS' ? `<span class="bdg bdg-i">IN_PROGRESS 🔄</span>` :
+                                   `<span class="bdg bdg-p">PENDING ⏳</span>`;
+
+        const urg  = (d.urgency || 'NORMAL').toUpperCase();
+        const urgC = urg === 'CRITICAL' ? 'color:var(--red);font-weight:700' :
+                     urg === 'HIGH'     ? 'color:var(--amber);font-weight:700' : '';
+
+        resEl.innerHTML = `
+            <div style="font-size:.58rem;font-family:'JetBrains Mono',monospace;color:var(--s);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase">
+                ✅ Live Data — Connected
+            </div>
+            <div class="str"><span class="sk">🆔 Complaint ID</span><span class="sv" style="font-family:'JetBrains Mono',monospace;font-size:.78rem">${d.id || id}</span></div>
+            <div class="str"><span class="sk">👤 Naam</span><span class="sv">${d.name || d.Name || '—'}</span></div>
+            <div class="str"><span class="sk">🏢 Dept</span><span class="sv">${d.departmentName || '—'}</span></div>
+            <div class="str"><span class="sk">⚠️ Urgency</span><span class="sv" style="${urgC}">${urg}</span></div>
+            <div class="str"><span class="sk">👮 Officer</span><span class="sv">${d.officerName || 'Assigned Nahi Hua'}</span></div>
+            <div class="str"><span class="sk">📌 Status</span>${badge}</div>
+        `;
+
+    } catch(e) {
+        resEl.innerHTML = `<div style="color:var(--red);font-size:.84rem;"><b>❌ Error: ${e.message}</b></div>`;
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

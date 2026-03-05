@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CivicInsight — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --s:#E8500A;--sl:#FF7A35;
+  --deep:#070709;--ink:#0E0E14;--lift:#181820;
+  --bdr:rgba(232,80,10,.15);--bdr2:rgba(255,255,255,.07);
+  --txt:#EDEAE5;--txt2:#B0ACBA;--txt3:#6E6A7A;
+  --green:#0FC88A;--red:#F04040;
+}
+body{background:var(--deep);color:var(--txt);font-family:'Outfit',sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px;position:relative;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(232,80,10,.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(232,80,10,.03) 1px,transparent 1px);background-size:50px 50px}
+.glow{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(232,80,10,.08) 0%,transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%)}
+.back{position:fixed;top:22px;left:24px;z-index:10;color:var(--txt3);text-decoration:none;
+  font-size:.85rem;transition:color .2s}
+.back:hover{color:var(--txt)}
+.card{position:relative;z-index:1;width:100%;max-width:420px;background:var(--ink);
+  border:1px solid var(--bdr);border-radius:20px;padding:42px 38px;
+  animation:up .4s ease}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.clogo{font-size:1.3rem;font-weight:800;text-align:center;margin-bottom:28px}
+.clogo span{color:var(--sl)}
+.ctitle{font-size:1.4rem;font-weight:800;margin-bottom:4px;letter-spacing:-.5px}
+.csub{color:var(--txt3);font-size:.875rem;margin-bottom:24px}
+
+/* role tabs */
+.rtabs{display:flex;gap:5px;background:rgba(0,0,0,.4);border-radius:10px;
+  padding:4px;margin-bottom:22px}
+.rtab{flex:1;padding:9px 4px;border:none;border-radius:7px;background:transparent;
+  color:var(--txt3);font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:500;
+  cursor:pointer;transition:all .2s;text-align:center}
+.rtab.on{background:var(--s);color:#fff;font-weight:700}
+
+.rinfo{background:rgba(232,80,10,.06);border:1px solid var(--bdr);border-radius:8px;
+  padding:9px 13px;font-size:.78rem;color:var(--txt3);margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace}
+.rinfo span{color:var(--sl)}
+
+.field{margin-bottom:15px}
+label{display:block;font-size:.72rem;color:var(--txt3);margin-bottom:5px;
+  font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+input{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bdr2);border-radius:10px;
+  padding:12px 14px;color:var(--txt);font-family:'Outfit',sans-serif;font-size:.9rem;
+  outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:rgba(232,80,10,.5);box-shadow:0 0 0 3px rgba(232,80,10,.08)}
+input::placeholder{color:var(--txt3)}
+
+.sbtn{width:100%;padding:13px;background:var(--s);border:none;border-radius:10px;
+  color:#fff;font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;box-shadow:0 4px 18px rgba(232,80,10,.25);margin-top:4px}
+.sbtn:hover{background:var(--sl);transform:translateY(-1px)}
+.sbtn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+.alt{text-align:center;margin-top:18px;color:var(--txt3);font-size:.875rem}
+.alt a{color:var(--s);text-decoration:none;font-weight:600}
+.alt a:hover{color:var(--sl)}
+
+.msg{border-radius:8px;padding:10px 14px;font-size:.84rem;margin-bottom:13px;display:none}
+.msg.on{display:block}
+.msg.err{background:rgba(240,64,64,.08);border:1px solid rgba(240,64,64,.22);color:var(--red)}
+.msg.ok{background:rgba(15,200,138,.08);border:1px solid rgba(15,200,138,.22);color:var(--green)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<a href="index.html" class="back">← Wapas Jayein</a>
+<div class="card">
+  <div class="clogo">Civic<span>Insight</span></div>
+  <div class="ctitle">Wapas Aiye 👋</div>
+  <p class="csub">Apna account type choose karein aur login karein.</p>
+
+  <div class="rtabs">
+    <button class="rtab on" onclick="setRole('USER',this)">🧑 Citizen</button>
+    <button class="rtab" onclick="setRole('OFFICER',this)">🏢 Officer</button>
+    <button class="rtab" onclick="setRole('ADMIN',this)">👑 Admin</button>
+  </div>
+
+  <div class="rinfo"><span id="epTxt">POST /create/login/user</span></div>
+
+  <div class="msg err" id="errMsg"></div>
+  <div class="msg ok"  id="okMsg"></div>
+
+  <div class="field"><label>Username</label><input type="text" id="uname" placeholder="aapka username..."/></div>
+  <div class="field"><label>Password</label><input type="password" id="pass" placeholder="••••••••"/></div>
+
+  <button class="sbtn" id="loginBtn" onclick="doLogin()">Login Karein</button>
+  <p class="alt">Account nahi hai? <a href="signup.html">Register karein</a></p>
+</div>
+
+<script>
+const API = 'https://civicinsight.onrender.com';
+let role = 'USER';
+
+const EP = {
+  USER:    `${API}/create/login/user`,
+  OFFICER: `${API}/create/department_user/login/officer`,
+  ADMIN:   `${API}/admin/signup/login/admin`
+};
+const EP_LABEL = {
+  USER:    'POST /create/login/user',
+  OFFICER: 'POST /create/department_user/login/officer',
+  ADMIN:   'POST /admin/signup/login/admin'
+};
+const REDIRECT = {
+  USER:    'dashboard-user.html',
+  OFFICER: 'dashboard-officer.html',
+  ADMIN:   'dashboard-officer.html'
+};
+
+/* pre-select role from URL */
+const urlRole = new URLSearchParams(location.search).get('role');
+if (urlRole && EP[urlRole.toUpperCase()]) {
+  role = urlRole.toUpperCase();
+  document.querySelectorAll('.rtab').forEach((t,i) => {
+    t.classList.remove('on');
+    if (['USER','OFFICER','ADMIN'][i] === role) t.classList.add('on');
+  });
+  document.getElementById('epTxt').textContent = EP_LABEL[role];
+}
+
+function setRole(r, el) {
+  role = r;
+  document.querySelectorAll('.rtab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('epTxt').textContent = EP_LABEL[r];
+  clearMsg();
+}
+function clearMsg() {
+  document.getElementById('errMsg').classList.remove('on');
+  document.getElementById('okMsg').classList.remove('on');
+}
+function showErr(m) { const e=document.getElementById('errMsg'); e.textContent='❌ '+m; e.classList.add('on'); }
+function showOk(m)  { const e=document.getElementById('okMsg');  e.textContent='✅ '+m; e.classList.add('on'); }
+
+async function doLogin() {
+  const username = document.getElementById('uname').value.trim();
+  const password = document.getElementById('pass').value.trim();
+  clearMsg();
+  if (!username || !password) { showErr('Username aur password dono darj karein.'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Login ho raha hai...';
+
+  try {
+    const res = await fetch(EP[role], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const text = await res.text(); // Pehle text mein lein
+
+    if (!res.ok) { showErr(text || `Error: ${res.status}`); return; }
+
+    try {
+      // Koshish karein ki agar ye JSON hai (Jo humne backend change kiya tha)
+      const data = JSON.parse(text);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('id', data.id); // <--- Yeh rahi aapki hex ID (69a263...)
+      localStorage.setItem('username', data.username || username);
+    } catch (e) {
+      // Agar backend sirf plain String bhej raha hai (Sirf Token)
+      const token = text.replace(/^"|"$/g, '');
+      localStorage.setItem('token', token);
+      // Agar ID nahi aayi toh username ko hi backup ID maan lein
+      localStorage.setItem('id', username); 
+    }
+
+    localStorage.setItem('role', role);
+    showOk('Login successful! Redirect ho raha hai...');
+    setTimeout(() => window.location.href = REDIRECT[role], 700);
+
+  } catch(e) {
+    console.error("Login Error:", e);
+    showErr('Backend connect nahi ho raha. Check karein Spring Boot chal raha hai ya nahi.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Login Karein';
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

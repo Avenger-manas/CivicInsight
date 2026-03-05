@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CivicInsight — Officer Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --s:#E8500A;--sl:#FF7A35;
+  --deep:#070709;--ink:#0E0E14;--lift:#181820;
+  --bdr:rgba(232,80,10,.14);--bdr2:rgba(255,255,255,.07);
+  --txt:#EDEAE5;--txt2:#B0ACBA;--txt3:#6E6A7A;
+  --green:#0FC88A;--red:#F04040;--amber:#F0A030;--blue:#3ABFCF;
+}
+html,body{height:100%}
+body{background:var(--deep);color:var(--txt);font-family:'Outfit',sans-serif;
+  display:flex;min-height:100vh}
+.sb{width:258px;min-height:100vh;background:var(--ink);border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;padding:26px 16px;
+  position:fixed;top:0;left:0;z-index:10;overflow-y:auto}
+.sb-logo{font-size:1.15rem;font-weight:800;margin-bottom:26px;display:flex;align-items:center;gap:7px}
+.sb-logo span{color:var(--sl)}
+.ldot{width:6px;height:6px;background:var(--s);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,80,10,.5)}50%{box-shadow:0 0 0 6px rgba(232,80,10,0)}}
+.sb-user{background:rgba(232,80,10,.07);border:1px solid var(--bdr);border-radius:11px;padding:13px;margin-bottom:18px}
+.sb-role{font-size:.62rem;color:var(--s);text-transform:uppercase;letter-spacing:3px;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.sb-name{font-weight:700;font-size:.92rem}
+.sb-sec{font-size:.6rem;text-transform:uppercase;letter-spacing:3px;color:var(--txt3);
+  padding:10px 12px 4px;font-family:'JetBrains Mono',monospace}
+.sb-nav{list-style:none}
+.sb-nav li{margin-bottom:2px}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;
+  color:var(--txt3);text-decoration:none;font-size:.845rem;font-weight:500;
+  transition:all .2s;cursor:pointer}
+.sb-nav a:hover,.sb-nav a.on{background:rgba(232,80,10,.1);color:var(--txt)}
+.sb-nav a.on{border-left:2px solid var(--s);padding-left:10px}
+.sb-div{height:1px;background:var(--bdr2);margin:10px 0}
+.sb-out{margin-top:auto;padding:9px 12px;border-radius:8px;border:none;
+  background:rgba(240,64,64,.08);color:var(--red);font-family:'Outfit',sans-serif;
+  font-size:.845rem;cursor:pointer;width:100%;text-align:left;transition:background .2s;
+  display:flex;align-items:center;gap:8px}
+.sb-out:hover{background:rgba(240,64,64,.16)}
+.admin-only{display:none}
+.admin-only.show{display:block}
+.main{margin-left:258px;flex:1;padding:36px;position:relative;z-index:1;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.top h1{font-size:1.45rem;font-weight:800;letter-spacing:-.5px}
+.top h1 em{color:var(--sl);font-style:normal}
+.top p{color:var(--txt3);font-size:.84rem;margin-top:3px}
+.rbdg{background:rgba(232,80,10,.1);border:1px solid var(--bdr);border-radius:100px;
+  padding:5px 14px;font-size:.72rem;color:var(--sl);font-family:'JetBrains Mono',monospace}
+.a-alert{background:rgba(58,191,207,.06);border:1px solid rgba(58,191,207,.2);
+  border-radius:10px;padding:13px 17px;font-size:.855rem;color:var(--blue);
+  margin-bottom:22px;display:none;align-items:center;gap:9px}
+.a-alert.show{display:flex}
+.tab{display:none}
+.tab.on{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--ink);border:1px solid var(--bdr);border-radius:16px;
+  overflow:hidden;max-width:740px;margin-bottom:18px}
+.ch{padding:20px 24px;border-bottom:1px solid var(--bdr2)}
+.ce{font-size:.6rem;text-transform:uppercase;letter-spacing:3px;color:var(--s);
+  font-weight:600;margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.ct{font-size:.98rem;font-weight:700;letter-spacing:-.3px}
+.cb{padding:20px 24px 24px}
+.field{margin-bottom:12px}
+label{display:block;font-size:.69rem;color:var(--txt3);margin-bottom:5px;
+  font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+input,textarea{width:100%;background:rgba(0,0,0,.38);border:1px solid var(--bdr2);
+  border-radius:9px;padding:11px 13px;color:var(--txt);font-family:'Outfit',sans-serif;
+  font-size:.875rem;outline:none;transition:border-color .2s,box-shadow .2s}
+textarea{min-height:95px;resize:vertical}
+input:focus,textarea:focus{border-color:rgba(232,80,10,.5);box-shadow:0 0 0 3px rgba(232,80,10,.08)}
+input::placeholder,textarea::placeholder{color:var(--txt3)}
+.srow{display:flex;gap:9px}
+.srow input{flex:1}
+.btn{padding:11px 18px;background:var(--s);border:none;border-radius:9px;
+  color:#fff;font-family:'Outfit',sans-serif;font-size:.84rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .2s}
+.btn:hover{background:var(--sl);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sec{background:transparent;border:1px solid var(--bdr2);color:var(--txt2)}
+.btn-sec:hover{background:rgba(232,80,10,.07);border-color:var(--bdr);color:var(--txt)}
+.res{margin-top:13px;background:rgba(0,0,0,.4);border:1px solid var(--bdr2);
+  border-radius:11px;padding:16px;display:none}
+.res.on{display:block;animation:fadeIn .3s ease}
+.dr{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.84rem;gap:8px}
+.dr:last-child{border-bottom:none}
+.dk{color:var(--txt3);flex-shrink:0;min-width:120px}
+.dv{font-weight:600;text-align:right}
+.ctxt{background:rgba(232,80,10,.04);border:1px solid rgba(232,80,10,.1);
+  border-radius:8px;padding:12px;color:var(--txt2);font-size:.84rem;line-height:1.7;margin:9px 0}
+.uc{color:var(--red);font-weight:700}.uh{color:var(--amber);font-weight:700}.un{color:var(--green)}
+.bdg{padding:3px 10px;border-radius:6px;font-size:.71rem;font-weight:600;font-family:'JetBrains Mono',monospace}
+.bdg-p{background:rgba(255,255,255,.05);color:var(--txt3)}
+.bdg-i{background:rgba(240,160,48,.12);color:var(--amber)}
+.bdg-r{background:rgba(15,200,138,.12);color:var(--green)}
+.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:11px;margin-top:13px}
+.ocard{background:rgba(0,0,0,.3);border:1px solid var(--bdr2);border-radius:10px;padding:15px;transition:border-color .2s}
+.ocard:hover{border-color:var(--bdr)}
+.ocn{font-weight:700;font-size:.92rem;margin-bottom:2px}
+.ocd{color:var(--s);font-size:.76rem;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.oci{color:var(--txt3);font-size:.78rem}
+.clist{display:flex;flex-direction:column;gap:10px;margin-top:13px}
+.citem{background:rgba(0,0,0,.3);border:1px solid var(--bdr2);border-radius:10px;
+  padding:14px;cursor:pointer;transition:all .2s}
+.citem:hover{border-color:var(--bdr);background:rgba(232,80,10,.04)}
+.cih{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+.cid{font-family:'JetBrains Mono',monospace;font-size:.76rem;color:var(--s)}
+.ctx{color:var(--txt2);font-size:.83rem;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cmeta{display:flex;gap:10px;margin-top:7px;flex-wrap:wrap}
+.ctag{font-size:.7rem;color:var(--txt3);font-family:'JetBrains Mono',monospace}
+.cdetail{display:none;margin-top:11px;border-top:1px solid var(--bdr2);padding-top:11px}
+.msg{border-radius:8px;padding:9px 13px;font-size:.84rem;margin-bottom:11px;display:none}
+.msg.on{display:block}
+.msg.err{background:rgba(240,64,64,.08);border:1px solid rgba(240,64,64,.2);color:var(--red)}
+.msg.ok{background:rgba(15,200,138,.08);border:1px solid rgba(15,200,138,.2);color:var(--green)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(232,80,10,.2);
+  border-top-color:var(--s);border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{color:var(--txt3);font-size:.84rem;text-align:center;padding:18px;font-family:'JetBrains Mono',monospace}
+@media(max-width:860px){.sb{display:none}.main{margin-left:0;padding:18px 14px}}
+</style>
+</head>
+<body>
+
+<aside class="sb">
+  <div class="sb-logo"><span class="ldot"></span>Civic<span>Insight</span></div>
+  <div class="sb-user">
+    <div class="sb-role" id="sbRole">OFFICER_PORTAL</div>
+    <div class="sb-name" id="sbName">—</div>
+  </div>
+  <div class="sb-sec">// Officer Tools</div>
+  <ul class="sb-nav">
+    <li><a class="on" onclick="tab('fetch',this)">📂&nbsp; Complaint Fetch</a></li>
+    <li><a onclick="tab('analysis',this)">🔍&nbsp; Analysis & Reply</a></li>
+    <li><a onclick="tab('mycomplaints',this)">📋&nbsp; Meri Complaints</a></li>
+    <li><a onclick="tab('findofficer',this)">👤&nbsp; Officer Dhundein</a></li>
+  </ul>
+  <div class="admin-only" id="adminNav">
+    <div class="sb-div"></div>
+    <div class="sb-sec">// Admin Only</div>
+    <ul class="sb-nav">
+      <li><a onclick="tab('reports',this)">📊&nbsp; All Reports</a></li>
+      <li><a onclick="tab('allofficers',this)">🧑‍💼&nbsp; All Officers</a></li>
+      <li><a onclick="tab('unsolved',this)">⚠️&nbsp; Unsolved</a></li>
+    </ul>
+  </div>
+  <div class="sb-div"></div>
+  <button class="sb-out" onclick="logout()">🚪&nbsp; Logout</button>
+</aside>
+
+<main class="main">
+  <div class="top">
+    <div>
+      <h1 id="pgTitle">Officer <em>Dashboard</em></h1>
+      <p>Complaints analyze karein, reply dein, status update karein.</p>
+    </div>
+    <div class="rbdg" id="roleBdg">OFFICER</div>
+  </div>
+  <div class="a-alert" id="adminAlert">
+    🔐 Admin View Active — Aapke paas sabhi complaints, officers aur reports ka full access hai.
+  </div>
+
+  <div class="tab on" id="tab-fetch">
+    <div class="card">
+      <div class="ch"><div class="ce">// Complaint Fetch</div><div class="ct">ID se Complaint Details Fetch Karein</div></div>
+      <div class="cb">
+        <div class="field"><label>Complaint ID</label>
+          <div class="srow">
+            <input type="text" id="fId" placeholder="Complaint ID..."/>
+            <button class="btn" onclick="fetchComplaint()">Fetch Karein</button>
+          </div>
+        </div>
+        <div class="res" id="fRes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-analysis">
+    <div class="card">
+      <div class="ch"><div class="ce">// Analysis & Reply</div><div class="ct">Complaint Analyze Karein aur Reply Dein</div></div>
+      <div class="cb">
+        <div class="msg err" id="aErr"></div>
+        <div class="msg ok"  id="aOk"></div>
+        <div class="field"><label>Complaint ID Load Karein</label>
+          <div class="srow">
+            <input type="text" id="aId" placeholder="Complaint ID..."/>
+            <button class="btn btn-sec" onclick="loadAnalysis()">Load</button>
+          </div>
+        </div>
+        <div class="res" id="aPrev"></div>
+        <div class="field" style="margin-top:14px"><label>Apna Reply / Report</label>
+          <textarea id="aMsg" placeholder="Analysis, action taken, ya remarks likhein..."></textarea>
+        </div>
+        <button class="btn" id="aSubBtn" onclick="submitAnalysis()">✅ Analysis Submit Karein</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-mycomplaints">
+    <div class="card">
+      <div class="ch">
+        <div class="ce">// Meri Complaints</div>
+        <div class="ct">Aapko Assigned Sabhi Complaints</div>
+      </div>
+      <div class="cb">
+        <div class="field">
+          <label>Officer ID</label>
+          <div class="srow">
+            <input type="text" id="myOfficerId" placeholder="Officer ID..." readonly
+              style="background:rgba(232,80,10,.04);border-color:rgba(232,80,10,.2);color:var(--sl);font-family:'JetBrains Mono',monospace;cursor:default"/>
+            <button class="btn" onclick="fetchOfficerComplaints()">Fetch Karein</button>
+          </div>
+        </div>
+        <div id="myCompRes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-findofficer">
+    <div class="card">
+      <div class="ch"><div class="ce">// Officer Details</div><div class="ct">Officer ID se Details Dhundein</div></div>
+      <div class="cb">
+        <div class="field"><label>Officer ID</label>
+          <div class="srow">
+            <input type="text" id="oId" placeholder="Officer ID..."/>
+            <button class="btn" onclick="findOfficer()">Dhundein</button>
+          </div>
+        </div>
+        <div class="res" id="oRes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-reports">
+    <div class="card">
+      <div class="ch"><div class="ce">// Admin — All Reports</div><div class="ct">Sabhi Complaints Fetch Karein</div></div>
+      <div class="cb">
+        <div class="field"><label>Admin ID</label>
+          <div class="srow">
+            <input type="text" id="rAdId" placeholder="Admin ID..."/>
+            <button class="btn" onclick="adminReports()">Fetch All</button>
+          </div>
+        </div>
+        <div id="rRes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-allofficers">
+    <div class="card">
+      <div class="ch"><div class="ce">// Admin — All Officers</div><div class="ct">Sabhi Department Officers</div></div>
+      <div class="cb">
+        <div class="field"><label>Admin ID</label>
+          <div class="srow">
+            <input type="text" id="oAdId" placeholder="Admin ID..."/>
+            <button class="btn" onclick="adminOfficers()">Fetch Officers</button>
+          </div>
+        </div>
+        <div class="ogrid" id="oRes2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-unsolved">
+    <div class="card">
+      <div class="ch"><div class="ce">// Admin — Unsolved</div><div class="ct">Pending / Unsolved Complaints</div></div>
+      <div class="cb">
+        <div class="field"><label>Admin ID</label>
+          <div class="srow">
+            <input type="text" id="uAdId" placeholder="Admin ID..."/>
+            <button class="btn" onclick="adminUnsolved()">Fetch Unsolved</button>
+          </div>
+        </div>
+        <div id="uRes"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API   = 'https://civicinsight.onrender.com';
+const token = localStorage.getItem('token');
+const role  = localStorage.getItem('role');
+const uname = localStorage.getItem('username') || 'User';
+const myId  = localStorage.getItem('id') || '';
+
+if (!token || (role !== 'OFFICER' && role !== 'ADMIN')) {
+  alert('Pehle login karein.');
+  window.location.href = 'login.html';
+}
+
+/* ── FIX: sidebar mein username ki jagah ID dikhao ── */
+document.getElementById('sbName').textContent = myId || uname;
+
+if (myId) {
+  document.getElementById('myOfficerId').value = myId;
+}
+
+if (role === 'ADMIN') {
+  document.getElementById('sbRole').textContent  = 'ADMIN_PORTAL';
+  document.getElementById('pgTitle').innerHTML   = 'Admin <em>Dashboard</em>';
+  document.getElementById('roleBdg').textContent = 'ADMIN';
+  document.getElementById('adminAlert').classList.add('show');
+  document.getElementById('adminNav').classList.add('show');
+}
+
+const H = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer ' + token
+});
+
+function tab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.sb-nav a').forEach(a => a.classList.remove('on'));
+  const activeTab = document.getElementById('tab-' + name);
+  if (activeTab) activeTab.classList.add('on');
+  if (el) el.classList.add('on');
+  if (role === 'ADMIN') {
+    const savedId = localStorage.getItem('id');
+    if (savedId) {
+      if (name === 'reports')     document.getElementById('rAdId').value = savedId;
+      if (name === 'allofficers') document.getElementById('oAdId').value = savedId;
+      if (name === 'unsolved')    document.getElementById('uAdId').value = savedId;
+    }
+  }
+  if (name === 'mycomplaints') {
+    document.getElementById('myOfficerId').value = myId;
+  }
+}
+
+function renderComplaint(d) {
+  if(!d) return '<p class="empty">Data nahi mila</p>';
+  const urg  = (d.urgency || '').toUpperCase();
+  const urgC = urg === 'CRITICAL' ? 'uc' : urg === 'HIGH' ? 'uh' : 'un';
+  const st   = (d.status || 'PENDING').toUpperCase();
+  const dateObj = d.createdAt ? new Date(d.createdAt) : null;
+  const formattedDate = dateObj
+    ? dateObj.toLocaleDateString('hi-IN') + ' | ' + dateObj.toLocaleTimeString('hi-IN', {hour: '2-digit', minute:'2-digit'})
+    : '—';
+  const offName = d.OfficerName || d.officerName || 'Not Assigned';
+  const offId   = d.officer_id  || d.officerId   || '—';
+  const compId  = d._id || d.id || '—';
+  return `
+    <div class="dr"><span class="dk">Complaint ID</span><span class="dv" style="font-family:'JetBrains Mono',monospace">${compId}</span></div>
+    <div class="dr"><span class="dk">Submission Date</span><span class="dv" style="color:var(--blue)">📅 ${formattedDate}</span></div>
+    <div class="dr"><span class="dk">Citizen Naam</span><span class="dv">${d.Name || d.name || '—'}</span></div>
+    <div class="dr"><span class="dk">City / Ward</span><span class="dv">${d.city || '—'} / ${d.ward_number || '—'}</span></div>
+    <div class="dr"><span class="dk">Department</span><span class="dv">${d.departmentName || '—'}</span></div>
+    <div class="dr"><span class="dk">Urgency</span><span class="dv ${urgC}">${urg || '—'}</span></div>
+    <div class="dr"><span class="dk">Assigned Officer</span><span class="dv" style="color:var(--sl);font-weight:700">${offName}<br><small style="font-size:.65rem;color:var(--txt3)">ID: ${offId}</small></span></div>
+    <div class="dr"><span class="dk">Status</span><span class="bdg ${st === 'RESOLVED' ? 'bdg-r' : 'bdg-p'}">${st}</span></div>
+    ${d.complaint ? `<div class="ctxt">💬 <strong>Shikayat:</strong> ${d.complaint}</div>` : ''}
+  `;
+}
+
+async function fetchComplaint() {
+  const id = document.getElementById('fId').value.trim();
+  if (!id) { alert('ID darj karein.'); return; }
+  const el = document.getElementById('fRes');
+  el.classList.add('on'); el.innerHTML = '<span class="spin"></span>';
+  try {
+    const r = await fetch(`${API}/department_officer/Analysis/fetch/complaint?Id=${encodeURIComponent(id)}`,
+      { method: 'POST', headers: H() });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    el.innerHTML = renderComplaint(await r.json());
+  } catch(e) { el.innerHTML = `<p style="color:var(--red)">❌ ${e.message}</p>`; }
+}
+
+async function loadAnalysis() {
+  const id = document.getElementById('aId').value.trim();
+  if (!id) return;
+  const el = document.getElementById('aPrev');
+  el.classList.add('on'); el.innerHTML = '<span class="spin"></span>';
+  try {
+    const r = await fetch(`${API}/department_officer/Analysis/fetch/complaint?Id=${encodeURIComponent(id)}`,
+      { method: 'POST', headers: H() });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    el.innerHTML = renderComplaint(await r.json());
+  } catch(e) { el.innerHTML = `<p style="color:var(--red)">❌ ${e.message}</p>`; }
+}
+
+async function submitAnalysis() {
+  const id  = document.getElementById('aId').value.trim();
+  const msg = document.getElementById('aMsg').value.trim();
+  const err = document.getElementById('aErr');
+  const ok  = document.getElementById('aOk');
+  err.classList.remove('on'); ok.classList.remove('on');
+  if (!id || !msg) { err.textContent = '❌ ID aur reply dono required hain.'; err.classList.add('on'); return; }
+  const btn = document.getElementById('aSubBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const r = await fetch(
+      `${API}/department_officer/Analysis/analysis/complaint?Id=${encodeURIComponent(id)}&message=${encodeURIComponent(msg)}`,
+      { method: 'POST', headers: H() });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    ok.textContent = '✅ Analysis aur reply successfully submit ho gayi!'; ok.classList.add('on');
+    document.getElementById('aMsg').value = '';
+  } catch(e) { err.textContent = '❌ ' + e.message; err.classList.add('on'); }
+  finally { btn.disabled = false; btn.textContent = '✅ Analysis Submit Karein'; }
+}
+
+async function fetchOfficerComplaints() {
+  const id = document.getElementById('myOfficerId').value.trim();
+  if (!id) { alert('Officer ID nahi mili. Pehle login karein.'); return; }
+  const el = document.getElementById('myCompRes');
+  el.innerHTML = '<span class="spin"></span> Complaints load ho rahi hain...';
+  try {
+    const r = await fetch(
+      `${API}/department_officer/Analysis/officer/complaint?Id=${encodeURIComponent(id)}`,
+      { method: 'POST', headers: H() }
+    );
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) {
+      el.innerHTML = '<p class="empty">// Abhi koi complaint assigned nahi hai</p>';
+      return;
+    }
+    const groups = {
+      CRITICAL: data.filter(d => (d.urgency||'').toUpperCase() === 'CRITICAL'),
+      HIGH:     data.filter(d => (d.urgency||'').toUpperCase() === 'HIGH'),
+      MEDIUM:   data.filter(d => (d.urgency||'').toUpperCase() === 'MEDIUM'),
+      LOW:      data.filter(d => !['CRITICAL','HIGH','MEDIUM'].includes((d.urgency||'').toUpperCase()))
+    };
+    let html = `
+      <div style="margin-bottom:14px;padding:10px 14px;background:rgba(232,80,10,.06);
+        border:1px solid var(--bdr);border-radius:9px;font-size:.8rem;color:var(--txt2);
+        display:flex;align-items:center;gap:8px;">
+        🪪 <span style="font-family:'JetBrains Mono';color:var(--sl)">${id}</span>
+        <span style="margin-left:auto;color:var(--txt3)">Total: <strong style="color:var(--txt)">${data.length}</strong></span>
+      </div>`;
+    for (const [level, list] of Object.entries(groups)) {
+      if (!list.length) continue;
+      const hColor = level==='CRITICAL'?'var(--red)':level==='HIGH'?'var(--amber)':level==='MEDIUM'?'var(--blue)':'var(--green)';
+      html += `
+        <div style="margin-top:20px;margin-bottom:10px;border-left:4px solid ${hColor};padding-left:12px;">
+          <h3 style="font-size:.85rem;letter-spacing:2px;color:${hColor}">${level} (${list.length})</h3>
+        </div>
+        <div class="clist">
+          ${list.map(d => {
+            const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : '—';
+            const st = (d.status||'PENDING').toUpperCase();
+            return `
+            <div class="citem" onclick="this.querySelector('.cdetail').style.display=this.querySelector('.cdetail').style.display==='none'?'block':'none'">
+              <div class="cih">
+                <span class="cid">${d._id||d.id||'—'}</span>
+                <span class="bdg ${st==='RESOLVED'?'bdg-r':st==='IN_PROGRESS'?'bdg-i':'bdg-p'}">${st}</span>
+              </div>
+              <div class="ctx">${d.complaint||'—'}</div>
+              <div class="cmeta">
+                <span class="ctag">📅 ${dateStr}</span>
+                <span class="ctag">🏢 ${d.departmentName||'—'}</span>
+                <span class="ctag">📍 ${d.city||'—'}</span>
+              </div>
+              <div class="cdetail" style="display:none">${renderComplaint(d)}</div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = `<p style="color:var(--red);padding:10px">❌ ${e.message}</p>`;
+  }
+}
+
+async function findOfficer() {
+  const id = document.getElementById('oId').value.trim();
+  if (!id) { alert('Officer ID darj karein.'); return; }
+  const el = document.getElementById('oRes');
+  el.classList.add('on');
+  el.innerHTML = '<span class="spin"></span> Dhund rahe hain...';
+  try {
+    const r = await fetch(`${API}/department_officer/Analysis/find/Officer?Id=${encodeURIComponent(id)}`, {
+      method: 'POST', headers: H()
+    });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    const d = await r.json();
+    el.innerHTML = `
+      <div style="border-bottom:1px solid var(--bdr2);padding-bottom:10px;margin-bottom:10px">
+        <div class="dr"><span class="dk">Officer ID</span><span class="dv" style="font-family:'JetBrains Mono';color:var(--sl)">${d.id||d._id||'—'}</span></div>
+      </div>
+      <div class="dr"><span class="dk">Naam</span><span class="dv">${d.name||d.Name||'—'}</span></div>
+      <div class="dr"><span class="dk">Username</span><span class="dv">@${d.username||'—'}</span></div>
+      <div class="dr"><span class="dk">Email</span><span class="dv" style="color:var(--blue)">${d.email||'—'}</span></div>
+      <div class="dr"><span class="dk">Department</span><span class="dv">${d.department||'—'}</span></div>
+      <div class="dr"><span class="dk">City</span><span class="dv">${d.city||'—'}</span></div>
+      <div style="margin-top:12px;background:rgba(15,200,138,.08);border:1px solid rgba(15,200,138,.2);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.75rem;color:var(--txt3);font-weight:600;text-transform:uppercase;letter-spacing:1px">Reports Status</span>
+        <span style="color:var(--green);font-weight:800;font-size:.9rem">📊 ${d.countReport||'0'} Assigned</span>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<p style="color:var(--red);padding:10px">❌ Error: ${e.message}</p>`;
+  }
+}
+
+async function adminReports() {
+  const id = document.getElementById('rAdId').value.trim();
+  if (!id) { alert('Admin ID darj karein.'); return; }
+  const el = document.getElementById('rRes');
+  el.innerHTML = '<span class="spin"></span> Sorting Reports...';
+  try {
+    const r = await fetch(`${API}/admin/fetch/reports?Id=${encodeURIComponent(id)}`, { method: 'POST', headers: H() });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p class="empty">// No reports found</p>'; return; }
+    const groups = {
+      CRITICAL: data.filter(d => (d.urgency||'').toUpperCase() === 'CRITICAL'),
+      HIGH:     data.filter(d => (d.urgency||'').toUpperCase() === 'HIGH'),
+      MEDIUM:   data.filter(d => (d.urgency||'').toUpperCase() === 'MEDIUM'),
+      LOW:      data.filter(d => (d.urgency||'').toUpperCase() === 'LOW' || !(d.urgency))
+    };
+    let html = '';
+    for (const [level, list] of Object.entries(groups)) {
+      if (list.length === 0) continue;
+      const headerColor = level === 'CRITICAL' ? 'var(--red)' : level === 'HIGH' ? 'var(--amber)' : level === 'MEDIUM' ? 'var(--blue)' : 'var(--green)';
+      html += `
+        <div style="margin-top:24px;margin-bottom:12px;border-left:4px solid ${headerColor};padding-left:12px;">
+          <h3 style="font-size:0.9rem;letter-spacing:2px;color:${headerColor}">${level} PRIORITY (${list.length})</h3>
+        </div>
+        <div class="clist">
+          ${list.map(d => {
+            const dateObj = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : '—';
+            return `
+            <div class="citem" onclick="this.querySelector('.cdetail').style.display=this.querySelector('.cdetail').style.display==='none'?'block':'none'">
+              <div class="cih">
+                <span class="cid">${d.id || d._id || '—'}</span>
+                <span class="bdg ${(d.status||'').toUpperCase()==='RESOLVED'?'bdg-r':(d.status||'').toUpperCase()==='IN_PROGRESS'?'bdg-i':'bdg-p'}">${d.status || 'PENDING'}</span>
+              </div>
+              <div class="ctx">${d.complaint || '—'}</div>
+              <div class="cmeta">
+                <span class="ctag" style="color:var(--sl)">👤 ${d.OfficerName || 'Not Assigned'}</span>
+                <span class="ctag">📅 ${dateObj}</span>
+                <span class="ctag">🏢 ${d.departmentName || '—'}</span>
+                <span class="ctag">📍 ${d.city || '—'}</span>
+              </div>
+              <div class="cdetail" style="display:none;padding-top:10px;border-top:1px solid var(--bdr2);margin-top:10px;">
+                ${renderComplaint(d)}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = `<p style="color:var(--red)">❌ ${e.message}</p>`; }
+}
+
+async function adminOfficers() {
+  const id = document.getElementById('oAdId').value.trim();
+  if (!id) { alert('Admin ID darj karein.'); return; }
+  const el = document.getElementById('oRes2');
+  el.innerHTML = '<span class="spin"></span> Fetching Officers...';
+  try {
+    const r = await fetch(`${API}/admin/fetch/find/AllOfficer?Id=${encodeURIComponent(id)}`, { method: 'POST', headers: H() });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p class="empty">// No officers found</p>'; return; }
+    el.innerHTML = data.map(o => `
+      <div class="ocard" style="border-left:3px solid var(--s);padding:18px;position:relative;">
+        <div style="position:absolute;top:12px;right:12px;font-size:0.65rem;color:var(--txt3);font-family:'JetBrains Mono';background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
+          #${o.id || o._id || '—'}
+        </div>
+        <div class="ocn" style="font-size:1.1rem;color:var(--txt);">${o.name || o.Name || '—'}</div>
+        <div class="ocd" style="margin-bottom:10px;">🏢 ${o.department || '—'}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;">
+          <div style="font-size:0.75rem;"><span style="color:var(--txt3)">USERNAME:</span><br><span style="color:var(--sl)">@${o.username || '—'}</span></div>
+          <div style="font-size:0.75rem;"><span style="color:var(--txt3)">REPORTS:</span><br><span style="color:var(--green);font-weight:bold;">${o.countReport || '0'} Assigned</span></div>
+        </div>
+        <div class="oci" style="line-height:1.6">
+          <div style="display:flex;align-items:center;gap:6px;">📍 <span>${o.city || '—'}</span></div>
+          <div style="display:flex;align-items:center;gap:6px;">✉️ <span style="font-family:'JetBrains Mono';font-size:0.75rem;color:var(--blue)">${o.email || '—'}</span></div>
+        </div>
+        <div style="margin-top:10px;font-size:0.6rem;letter-spacing:1px;color:var(--txt3)">
+          ROLES: ${(o.roles || []).join(', ') || 'OFFICER'}
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<p style="color:var(--red);grid-column:1/-1;">❌ ${e.message}</p>`; }
+}
+
+async function adminUnsolved() {
+  const id = document.getElementById('uAdId').value.trim();
+  if (!id) { alert('Admin ID darj karein.'); return; }
+  const el = document.getElementById('uRes');
+  el.innerHTML = '<span class="spin"></span>';
+  try {
+    const r = await fetch(`${API}/admin/fetch/unsolved/complaint?Id=${encodeURIComponent(id)}`, { method: 'POST', headers: H() });
+    if (!r.ok) throw new Error(`(${r.status}) ${await r.text()}`);
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p class="empty" style="color:var(--green)">✅ Koi unsolved complaint nahi!</p>'; return; }
+    el.innerHTML = `<div class="clist">${data.map(d => {
+      const dateObj = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : '—';
+      return `
+      <div class="citem">
+        <div class="cih">
+          <span class="cid">${d.id || d._id || '—'}</span>
+          <span class="${(d.urgency||'').toUpperCase()==='CRITICAL'?'uc':(d.urgency||'').toUpperCase()==='HIGH'?'uh':'un'}">${d.urgency || '—'}</span>
+        </div>
+        <div class="ctx">${d.complaint || '—'}</div>
+        <div class="cmeta">
+          <span class="ctag" style="color:var(--sl)">👤 ${d.OfficerName || 'Not Assigned'}</span>
+          <span class="ctag">📅 ${dateObj}</span>
+          <span class="ctag">🏢 ${d.departmentName || '—'}</span>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  } catch(e) { el.innerHTML = `<p style="color:var(--red)">❌ ${e.message}</p>`; }
+}
+
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+</script>
+</body>
+</html>
