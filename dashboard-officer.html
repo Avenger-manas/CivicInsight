@@ -178,7 +178,7 @@ input::placeholder,textarea::placeholder{color:var(--txt3)}
       <div class="ch"><div class="ce">// Analysis & Reply</div><div class="ct">Complaint Analyze Karein aur Reply Dein</div></div>
       <div class="cb">
         <div class="msg err" id="aErr"></div>
-        <div class="msg ok"  id="aOk"></div>
+        <div class="msg ok" id="aOk"></div>
         <div class="field"><label>Complaint ID Load Karein</label>
           <div class="srow">
             <input type="text" id="aId" placeholder="Complaint ID..."/>
@@ -304,6 +304,10 @@ const H = () => ({
   'Authorization': 'Bearer ' + token
 });
 
+// Solved statuses — ANALYZED bhi solved hai
+const SOLVED = ['RESOLVED','ANALYZED'];
+const isSolved = s => SOLVED.includes((s||'').toUpperCase());
+
 function tab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.sb-nav a').forEach(a => a.classList.remove('on'));
@@ -343,7 +347,7 @@ function renderComplaint(d) {
     <div class="dr"><span class="dk">Department</span><span class="dv">${d.departmentName || '—'}</span></div>
     <div class="dr"><span class="dk">Urgency</span><span class="dv ${urgC}">${urg || '—'}</span></div>
     <div class="dr"><span class="dk">Assigned Officer</span><span class="dv" style="color:var(--sl);font-weight:700">${offName}<br><small style="font-size:.65rem;color:var(--txt3)">ID: ${offId}</small></span></div>
-    <div class="dr"><span class="dk">Status</span><span class="bdg ${st === 'RESOLVED' ? 'bdg-r' : 'bdg-p'}">${st}</span></div>
+    <div class="dr"><span class="dk">Status</span><span class="bdg ${isSolved(d.status) ? 'bdg-r' : 'bdg-p'}">${st}</span></div>
     ${d.complaint ? `<div class="ctxt">💬 <strong>Shikayat:</strong> ${d.complaint}</div>` : ''}
   `;
 }
@@ -396,7 +400,7 @@ function renderGrouped(data, showOfficer = false) {
           <div class="citem" onclick="this.querySelector('.cdetail').style.display=this.querySelector('.cdetail').style.display==='none'?'block':'none'">
             <div class="cih">
               <span class="cid">${d._id||d.id||'—'}</span>
-              <span class="bdg ${st==='RESOLVED'?'bdg-r':st==='IN_PROGRESS'?'bdg-i':'bdg-p'}">${st}</span>
+              <span class="bdg ${isSolved(d.status)?'bdg-r':st==='IN_PROGRESS'?'bdg-i':'bdg-p'}">${st}</span>
             </div>
             <div class="ctx">${d.complaint||'—'}</div>
             <div class="cmeta">
@@ -446,8 +450,8 @@ function toggleDept(header) {
 
 function summaryBanner(id, data) {
   const total    = data.length;
-  const resolved = data.filter(d => (d.status||'').toUpperCase() === 'RESOLVED').length;
-  const pending  = data.filter(d => (d.status||'').toUpperCase() !== 'RESOLVED').length;
+  const resolved = data.filter(d => isSolved(d.status)).length;
+  const pending  = data.filter(d => !isSolved(d.status)).length;
   return `
     <div style="margin-bottom:18px;">
       <div style="padding:10px 14px;background:rgba(232,80,10,.06);border:1px solid var(--bdr);
@@ -459,7 +463,7 @@ function summaryBanner(id, data) {
       <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--bdr);border-top:none;border-radius:0 0 9px 9px;overflow:hidden;">
         <div style="padding:14px;background:rgba(15,200,138,.06);border-right:1px solid var(--bdr2);text-align:center;">
           <div style="font-size:1.4rem;font-weight:800;color:var(--green);font-family:'JetBrains Mono'">${resolved}</div>
-          <div style="font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-top:3px">✅ Resolved</div>
+          <div style="font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-top:3px">✅ Solved</div>
         </div>
         <div style="padding:14px;background:rgba(255,255,255,.02);text-align:center;">
           <div style="font-size:1.4rem;font-weight:800;color:var(--amber);font-family:'JetBrains Mono'">${pending}</div>
